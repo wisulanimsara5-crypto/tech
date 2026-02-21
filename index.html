@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zentry Tech | Engineering the Future</title>
+    <meta name="description" content="Zentry Tech - Premium Technology Reviews, AI Insights, and Future Tech News.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind Config for Custom Colors -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#050505',
+                            card: '#0f0f11',
+                            accent: '#00f0ff', // Electric Cyan
+                            accentHover: '#00c2cc',
+                            purple: '#7000ff'
+                        }
+                    },
+                    animation: {
+                        'spin-slow': 'spin 12s linear infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles & Utilities */
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .glass-nav {
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(0, 240, 255, 0.3);
+            box-shadow: 0 20px 40px -10px rgba(0, 240, 255, 0.1);
+        }
+
+        /* Text Gradients */
+        .text-gradient {
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-gradient-accent {
+            background: linear-gradient(to right, #00f0ff, #7000ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Glow Effects */
+        .glow-text {
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+        
+        .glow-box {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+        }
+
+        /* Button Ripple */
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-ripple::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+        .btn-ripple:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+
+        /* Canvas Background */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Reveal Animation Classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Input Autofill Fix */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus {
+            -webkit-text-fill-color: white;
+            -webkit-box-shadow: 0 0 0px 1000px #0f0f11 inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-accent selection:text-black">
+
+    <!-- Dynamic Background -->
+    <div id="canvas-container">
+        <canvas id="particleCanvas"></canvas>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#" class="text-2xl font-display font-bold tracking-tighter flex items-center gap-2 group">
+                <div class="w-8 h-8 bg-gradient-to-br from-brand-accent to-brand-purple rounded-lg flex items-center justify-center text-black font-bold text-lg group-hover:rotate-12 transition-transform">Z</div>
+                <span class="group-hover:text-brand-accent transition-colors">Zentry<span class="font-light text-gray-400">Tech</span></span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#home" class="text-sm font-medium text-gray-300 hover:text-brand-accent transition-colors relative group">
+                    Home
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-accent transition-all group-hover:w-full"></span>
+                </a>
+                <a href="#reviews" class="text-sm font-medium text-gray-300 hover:text-brand-accent transition-colors relative group">
+                    Reviews
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-accent transition-all group-hover:w-full"></span>
+                </a>
+                <a href="#videos" class="text-sm font-medium text-gray-300 hover:text-brand-accent transition-colors relative group">
+                    Videos
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-accent transition-all group-hover:w-full"></span>
+                </a>
+                <a href="#features" class="text-sm font-medium text-gray-300 hover:text-brand-accent transition-colors relative group">
+                    AI Tools
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-accent transition-all group-hover:w-full"></span>
+                </a>
+                <a href="#contact" class="px-5 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-brand-accent hover:text-black hover:border-brand-accent transition-all duration-300 text-sm font-semibold">
+                    Contact
+                </a>
+            </div>
+
+            <!-- Mobile Hamburger -->
+            <button id="mobile-menu-btn" class="md:hidden text-2xl text-white focus:outline-none">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="fixed inset-0 bg-black/95 backdrop-blur-xl z-40 transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center gap-8 md:hidden">
+            <button id="close-menu-btn" class="absolute top-6 right-6 text-3xl text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <a href="#home" class="text-2xl font-display font-bold hover:text-brand-accent mobile-link">Home</a>
+            <a href="#reviews" class="text-2xl font-display font-bold hover:text-brand-accent mobile-link">Reviews</a>
+            <a href="#videos" class="text-2xl font-display font-bold hover:text-brand-accent mobile-link">Videos</a>
+            <a href="#features" class="text-2xl font-display font-bold hover:text-brand-accent mobile-link">AI Tools</a>
+            <a href="#contact" class="text-2xl font-display font-bold hover:text-brand-accent mobile-link">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative pt-20 overflow-hidden">
+        <!-- Decorative Elements -->
+        <div class="absolute top-1/4 left-10 w-64 h-64 bg-brand-accent/20 rounded-full blur-[100px] animate-pulse-slow"></div>
+        <div class="absolute bottom-1/4 right-10 w-96 h-96 bg-brand-purple/20 rounded-full blur-[120px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <div class="inline-block mb-4 px-4 py-1 rounded-full border border-brand-accent/30 bg-brand-accent/10 backdrop-blur-sm reveal">
+                <span class="text-brand-accent text-sm font-semibold tracking-wider uppercase">Next Gen Tech</span>
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-6 leading-tight reveal" style="transition-delay: 100ms;">
+                Engineering the <br>
+                <span class="text-gradient-accent glow-text">Future of Tech</span>
+            </h1>
+            
+            <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light reveal" style="transition-delay: 200ms;">
+                We decode the complex world of AI, gadgets, and software. Join the elite community shaping tomorrow's digital landscape.
+            </p>
+            
+            <div class="flex flex-col md:flex-row gap-4 justify-center items-center reveal" style="transition-delay: 300ms;">
+                <a href="#videos" class="btn-ripple px-8 py-4 rounded-full bg-brand-accent text-black font-bold text-lg hover:bg-white transition-colors shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center gap-2">
+                    <i class="fa-brands fa-youtube"></i> Subscribe on YouTube
+                </a>
+                <a href="#reviews" class="px-8 py-4 rounded-full glass text-white font-semibold text-lg hover:bg-white/10 transition-colors flex items-center gap-2 group">
+                    Explore Reviews <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <i class="fa-solid fa-chevron-down text-gray-500"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Videos Section -->
+    <section id="videos" class="py-24 relative">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-end mb-12 reveal">
+                <div>
+                    <h2 class="text-3xl md:text-5xl font-display font-bold mb-2">Latest <span class="text-brand-accent">Videos</span></h2>
+                    <p class="text-gray-400">Deep dives into the latest tech drops.</p>
+                </div>
+                <a href="#" class="hidden md:flex items-center gap-2 text-brand-accent hover:text-white transition-colors">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Video Card 1 -->
+                <div class="glass-card rounded-2xl overflow-hidden group reveal">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=800&q=80" alt="VR Headset" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center text-black pl-1">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-mono">12:45</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-brand-accent transition-colors">Apple Vision Pro: 30 Days Later</h3>
+                        <p class="text-gray-400 text-sm line-clamp-2">Is spatial computing the future or just an expensive toy? Our honest long-term review.</p>
+                    </div>
+                </div>
+
+                <!-- Video Card 2 -->
+                <div class="glass-card rounded-2xl overflow-hidden group reveal" style="transition-delay: 100ms;">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80" alt="AI Robot" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center text-black pl-1">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-mono">08:20</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-brand-accent transition-colors">AI Coding Assistants Battle</h3>
+                        <p class="text-gray-400 text-sm line-clamp-2">GitHub Copilot vs Cursor vs Cody. Which one writes the cleanest code?</p>
+                    </div>
+                </div>
+
+                <!-- Video Card 3 -->
+                <div class="glass-card rounded-2xl overflow-hidden group reveal" style="transition-delay: 200ms;">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80" alt="Retro Tech" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center text-black pl-1">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-mono">15:10</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-brand-accent transition-colors">Building a $5000 Gaming PC</h3>
+                        <p class="text-gray-400 text-sm line-clamp-2">Step-by-step guide to the ultimate RGB beast for 4K 240Hz gaming.</p>
+                    </div>
+                </div>
+                
+                 <!-- Video Card 4 -->
+                 <div class="glass-card rounded-2xl overflow-hidden group reveal">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1535378437327-b71494669e9d?auto=format&fit=crop&w=800&q=80" alt="Chip" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center text-black pl-1">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-mono">10:05</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-brand-accent transition-colors">M3 Max Chip Architecture</h3>
+                        <p class="text-gray-400 text-sm line-clamp-2">Why the 3nm process changes everything for laptop performance.</p>
+                    </div>
+                </div>
+
+                <!-- Video Card 5 -->
+                <div class="glass-card rounded-2xl overflow-hidden group reveal" style="transition-delay: 100ms;">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80" alt="Cyber Security" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center text-black pl-1">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-mono">18:30</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-brand-accent transition-colors">Cybersecurity in 2024</h3>
+                        <p class="text-gray-400 text-sm line-clamp-2">How to protect your digital assets from the latest AI-driven threats.</p>
+                    </div>
+                </div>
+
+                <!-- Video Card 6 -->
+                <div class="glass-card rounded-2xl overflow-hidden group reveal" style="transition-delay: 200ms;">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=800&q=80" alt="Phone" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-12 h-12 bg-brand-accent rounded-full flex items-center justify-center text-black pl-1">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-mono">06:45</span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-brand-accent transition-colors">Samsung S24 Ultra Review</h3>
+                        <p class="text-gray-400 text-sm line-clamp-2">Is the AI integration gimmick or genuinely useful? We find out.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Reviews Section -->
+    <section id="reviews" class="py-24 bg-brand-card relative overflow-hidden">
+        <!-- Background decoration -->
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-accent/5 to-transparent pointer-events-none"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-5xl font-display font-bold mb-4">In-Depth <span class="text-brand-accent">Reviews</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">We don't just unbox; we stress test, benchmark, and live with the tech to give you the verdict.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Featured Review Image -->
+                <div class="relative reveal">
+                    <div class="absolute -inset-4 bg-gradient-to-r from-brand-accent to-brand-purple rounded-2xl opacity-30 blur-lg"></div>
+                    <div class="relative rounded-2xl overflow-hidden border border-white/10">
+                        <img src="https://images.unsplash.com/photo-1611186871348-640e76c9277f?auto=format&fit=crop&w=1000&q=80" alt="MacBook Review" class="w-full object-cover hover:scale-105 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-brand-accent text-black text-xs font-bold px-3 py-1 rounded-full">EDITOR'S CHOICE</div>
+                    </div>
+                </div>
+
+                <!-- Review Content -->
+                <div class="reveal" style="transition-delay: 200ms;">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-brand-accent font-mono text-sm">LAPTOPS</span>
+                        <span class="text-gray-600">•</span>
+                        <span class="text-gray-400 text-sm">Oct 24, 2023</span>
+                    </div>
+                    <h3 class="text-3xl md:text-4xl font-bold mb-6">MacBook Pro M3 Max: Creative Powerhouse</h3>
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        After three weeks of rendering 8K video and compiling massive codebases, the efficiency of the M3 Max is undeniable. The battery life remains untouched by any x86 competitor.
+                    </p>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-8 border-y border-white/10 py-6">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-white">9.8</div>
+                            <div class="text-xs text-gray-500 uppercase tracking-wider">Performance</div>
+                        </div>
+                        <div class="text-center border-l border-white/10">
+                            <div class="text-2xl font-bold text-white">9.5</div>
+                            <div class="text-xs text-gray-500 uppercase tracking-wider">Display</div>
+                        </div>
+                        <div class="text-center border-l border-white/10">
+                            <div class="text-2xl font-bold text-white">8.9</div>
+                            <div class="text-xs text-gray-500 uppercase tracking-wider">Value</div>
+                        </div>
+                    </div>
+
+                    <a href="#" class="inline-flex items-center gap-2 text-brand-accent font-semibold hover:gap-4 transition-all">
+                        Read Full Review <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Zentry Section -->
+    <section id="features" class="py-24 relative">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-5xl font-display font-bold mb-4">Why <span class="text-brand-accent">Zentry?</span></h2>
+                <p class="text-gray-400">More than just a tech channel. We are a digital ecosystem.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Feature 1 -->
+                <div class="glass-card p-8 rounded-2xl text-center group reveal">
+                    <div class="w-16 h-16 mx-auto bg-brand-accent/10 rounded-2xl flex items-center justify-center text-brand-accent text-2xl mb-6 group-hover:scale-110 group-hover:bg-brand-accent group-hover:text-black transition-all duration-300">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Latest Insights</h3>
+                    <p class="text-gray-400 text-sm">Stay ahead with breaking news and leaks from the tech industry.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="glass-card p-8 rounded-2xl text-center group reveal" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 mx-auto bg-brand-accent/10 rounded-2xl flex items-center justify-center text-brand-accent text-2xl mb-6 group-hover:scale-110 group-hover:bg-brand-accent group-hover:text-black transition-all duration-300">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Honest Reviews</h3>
+                    <p class="text-gray-400 text-sm">No sponsored bias. We buy our own units to give you the truth.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="glass-card p-8 rounded-2xl text-center group reveal" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 mx-auto bg-brand-accent/10 rounded-2xl flex items-center justify-center text-brand-accent text-2xl mb-6 group-hover:scale-110 group-hover:bg-brand-accent group-hover:text-black transition-all duration-300">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">AI & Coding</h3>
+                    <p class="text-gray-400 text-sm">Tutorials on Python, React, and leveraging AI for productivity.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="glass-card p-8 rounded-2xl text-center group reveal" style="transition-delay: 300ms;">
+                    <div class="w-16 h-16 mx-auto bg-brand-accent/10 rounded-2xl flex items-center justify-center text-brand-accent text-2xl mb-6 group-hover:scale-110 group-hover:bg-brand-accent group-hover:text-black transition-all duration-300">
+                        <i class="fa-solid fa-chart-simple"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Smart Comparisons</h3>
+                    <p class="text-gray-400 text-sm">Data-driven comparisons to help you choose the right gadget.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-brand-purple/10 pointer-events-none"></div>
+        
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="max-w-4xl mx-auto glass rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl reveal">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-display font-bold mb-4">Get in <span class="text-brand-accent">Touch</span></h2>
+                    <p class="text-gray-400">Have a product to review or a collaboration idea? Let's talk.</p>
+                </div>
+
+                <form id="contactForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="relative">
+                            <input type="text" id="name" class="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-transparent focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all peer" placeholder="Name">
+                            <label for="name" class="absolute left-5 top-4 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-brand-accent peer-focus:bg-[#0f0f11] peer-focus:px-1 pointer-events-none">Name</label>
+                            <p class="text-red-500 text-xs mt-1 hidden" id="nameError">Please enter your name.</p>
+                        </div>
+                        <div class="relative">
+                            <input type="email" id="email" class="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-transparent focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all peer" placeholder="Email">
+                            <label for="email" class="absolute left-5 top-4 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-brand-accent peer-focus:bg-[#0f0f11] peer-focus:px-1 pointer-events-none">Email</label>
+                            <p class="text-red-500 text-xs mt-1 hidden" id="emailError">Please enter a valid email.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <select id="subject" class="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all appearance-none">
+                            <option value="" disabled selected>Select Subject</option>
+                            <option value="review">Product Review Request</option>
+                            <option value="sponsor">Sponsorship</option>
+                            <option value="general">General Inquiry</option>
+                        </select>
+                        <div class="absolute right-5 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-500">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <textarea id="message" rows="4" class="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-transparent focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent transition-all peer" placeholder="Message"></textarea>
+                        <label for="message" class="absolute left-5 top-4 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-brand-accent peer-focus:bg-[#0f0f11] peer-focus:px-1 pointer-events-none">Message</label>
+                        <p class="text-red-500 text-xs mt-1 hidden" id="messageError">Please enter a message.</p>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-brand-accent to-brand-purple text-black font-bold py-4 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 group">
+                        <span>Send Message</span>
+                        <i class="fa-solid fa-paper-plane group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                    </button>
+                    
+                    <div id="successMessage" class="hidden text-center text-brand-accent font-semibold mt-4">
+                        <i class="fa-solid fa-check-circle mr-2"></i> Message sent successfully!
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t border-white/10 pt-16 pb-8 relative overflow-hidden">
+        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-brand-accent to-transparent opacity-30"></div>
+
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <a href="#" class="text-2xl font-display font-bold tracking-tighter flex items-center gap-2 mb-6">
+                        <div class="w-8 h-8 bg-gradient-to-br from-brand-accent to-brand-purple rounded-lg flex items-center justify-center text-black font-bold text-lg">Z</div>
+                        <span>Zentry<span class="font-light text-gray-400">Tech</span></span>
+                    </a>
+                    <p class="text-gray-500 max-w-sm mb-6">
+                        Engineering the future, one video at a time. Join our community of tech enthusiasts and innovators.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-brand-accent hover:text-black transition-all">
+                            <i class="fa-brands fa-youtube"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-brand-accent hover:text-black transition-all">
+                            <i class="fa-brands fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-brand-accent hover:text-black transition-all">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-brand-accent hover:text-black transition-all">
+                            <i class="fa-brands fa-discord"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-6">Quick Links</h4>
+                    <ul class="space-y-4 text-gray-500">
+                        <li><a href="#home" class="hover:text-brand-accent transition-colors">Home</a></li>
+                        <li><a href="#reviews" class="hover:text-brand-accent transition-colors">Reviews</a></li>
+                        <li><a href="#videos" class="hover:text-brand-accent transition-colors">Videos</a></li>
+                        <li><a href="#contact" class="hover:text-brand-accent transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-6">Legal</h4>
+                    <ul class="space-y-4 text-gray-500">
+                        <li><a href="#" class="hover:text-brand-accent transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-brand-accent transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-brand-accent transition-colors">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-600 text-sm text-center md:text-left">
+                    &copy; 2024 Zentry Tech. All rights reserved.
+                </p>
+                <p class="text-gray-600 text-sm flex items-center gap-2">
+                    Designed with <i class="fa-solid fa-heart text-brand-accent"></i> for the future.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Canvas Particle Background ---
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+                this.color = Math.random() > 0.5 ? 'rgba(0, 240, 255, ' : 'rgba(112, 0, 255, '; 
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color + Math.random() * 0.5 + ')';
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const particleCount = Math.min(window.innerWidth / 10, 100); // Responsive count
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Draw connections
+            particles.forEach((a, index) => {
+                for (let j = index + 1; j < particles.length; j++) {
+                    const b = particles[j];
+                    const dx = a.x - b.x;
+                    const dy = a.y - b.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(a.x, a.y);
+                        ctx.lineTo(b.x, b.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        // --- 2. Navbar Scroll Effect ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('glass-nav', 'shadow-lg');
+                navbar.classList.remove('py-4');
+                navbar.classList.add('py-2');
+            } else {
+                navbar.classList.remove('glass-nav', 'shadow-lg');
+                navbar.classList.remove('py-2');
+                navbar.classList.add('py-4');
+            }
+        });
+
+        // --- 3. Scroll Reveal Animation ---
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    // Optional: Stop observing once revealed
+                    // revealObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: "0px 0px -50px 0px"
+        });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // --- 4. Mobile Menu Toggle ---
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeMenuBtn = document.getElementById('close-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        function toggleMenu() {
+            const isClosed = mobileMenu.classList.contains('translate-x-full');
+            if (isClosed) {
+                mobileMenu.classList.remove('translate-x-full');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            } else {
+                mobileMenu.classList.add('translate-x-full');
+                document.body.style.overflow = '';
+            }
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleMenu);
+        closeMenuBtn.addEventListener('click', toggleMenu);
+        
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', toggleMenu);
+        });
+
+        // --- 5. Contact Form Validation ---
+        const form = document.getElementById('contactForm');
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const messageInput = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMsg = document.getElementById('successMessage');
+
+        function validateEmail(email) {
+            return String(email)
+                .toLowerCase()
+                .match(
+                    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                );
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            let isValid = true;
+
+            // Reset errors
+            document.querySelectorAll('p[id$="Error"]').forEach(el => el.classList.add('hidden'));
+
+            // Validate Name
+            if (nameInput.value.trim() === '') {
+                document.getElementById('nameError').classList.remove('hidden');
+                nameInput.classList.add('border-red-500');
+                isValid = false;
+            } else {
+                nameInput.classList.remove('border-red-500');
+            }
+
+            // Validate Email
+            if (!validateEmail(emailInput.value)) {
+                document.getElementById('emailError').classList.remove('hidden');
+                emailInput.classList.add('border-red-500');
+                isValid = false;
+            } else {
+                emailInput.classList.remove('border-red-500');
+            }
+
+            // Validate Message
+            if (messageInput.value.trim() === '') {
+                document.getElementById('messageError').classList.remove('hidden');
+                messageInput.classList.add('border-red-500');
+                isValid = false;
+            } else {
+                messageInput.classList.remove('border-red-500');
+            }
+
+            if (isValid) {
+                // Simulate sending
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...';
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-75');
+
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-75');
+                    form.reset();
+                    successMsg.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        successMsg.classList.add('hidden');
+                    }, 5000);
+                }, 1500);
+            }
+        });
+
+        // Input focus effects for validation reset
+        [nameInput, emailInput, messageInput].forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('border-red-500');
+                document.getElementById(this.id + 'Error').classList.add('hidden');
+            });
+        });
+
+    </script>
+</body>
+</html>
